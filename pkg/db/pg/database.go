@@ -2,37 +2,53 @@ package pg
 
 import (
 	"context"
+	"sync"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// TODO handle Database & Config
+var (
+	dialectsLock sync.RWMutex
+	dials        map[string]*Database
+)
+
 type Database struct {
 	pool *pgxpool.Pool
+	dsn  string
+	// TODO handle Database & Config
 }
 
-func (database *Database) Query(
-	ctx context.Context,
-	statement string,
-	args ...interface{},
-) (pgx.Rows, error) {
-	return database.pool.Query(
-		ctx,
-		statement,
-		args,
-	)
+func (db *Database) New(dsn string) (*Database, error) {
+	pool, err := pgxpool.Connect(context.Background(), dsn)
+	if err != nil {
+		return nil, err
+	}
+	return &Database{
+		pool: pool,
+		dsn:  dsn,
+	}, nil
 }
 
-func (database *Database) Exec(
-	ctx context.Context,
-	statement string,
-	args ...interface{},
-) (pgconn.CommandTag, error) {
-	return database.pool.Exec(
-		ctx,
-		statement,
-		args,
-	)
+func (db *Database) GetDatabase() (*Database, error) {
+	dialectsLock.Lock()
+	defer dialectsLock.Unlock()
+
+	if db.dsn == "" {
+		return nil, ErrorInvalidDsnString
+	}
+	if dials == nil {
+		dials = make(map[string]*Database)
+	}
+
+	database, ok := dials[db.dsn]
+	if ok {
+		return database, nil
+	}
+
+	database, err := db.New(db.dsn)
+	if err != nil {
+		return nil, err
+	}
+	dials[db.dsn] = database
+	return database, nil
 }
