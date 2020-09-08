@@ -30,14 +30,11 @@ func (db *Database) New(dsn string) (*Database, error) {
 }
 
 func (db *Database) GetDatabase() (*Database, error) {
-	dialectsLock.Lock()
-	defer dialectsLock.Unlock()
-
 	if db.dsn == "" {
 		return nil, ErrorInvalidDsnString
 	}
 	if dials == nil {
-		dials = make(map[string]*Database)
+		initDials()
 	}
 
 	database, ok := dials[db.dsn]
@@ -49,6 +46,19 @@ func (db *Database) GetDatabase() (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-	dials[db.dsn] = database
+
+	updateDails(db.dsn, database)
 	return database, nil
+}
+
+func initDials() {
+	dialectsLock.Lock()
+	defer dialectsLock.Unlock()
+	dials = make(map[string]*Database)
+}
+
+func updateDails(dsn string, db *Database) {
+	dialectsLock.Lock()
+	defer dialectsLock.Unlock()
+	dials[dsn] = db
 }
