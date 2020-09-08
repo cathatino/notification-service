@@ -12,10 +12,10 @@ var (
 	dials        map[string]*Database
 )
 
+// TODO handle Database & Config
 type Database struct {
 	pool *pgxpool.Pool
 	dsn  string
-	// TODO handle Database & Config
 }
 
 func (db *Database) New(dsn string) (*Database, error) {
@@ -51,12 +51,14 @@ func (db *Database) GetDatabase() (*Database, error) {
 	return database, nil
 }
 
+// init dials map intial value
 func initDials() {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
 	dials = make(map[string]*Database)
 }
 
+// update dials dsn database
 func updateDails(dsn string, db *Database) {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
