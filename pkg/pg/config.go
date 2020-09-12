@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	psqlFmt string = "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable"
+	psqlFmt string = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
 )
 
 type Config struct {
 	Host            string
-	Port            int
+	Port            string
 	User            string
 	Password        string
 	Dbname          string

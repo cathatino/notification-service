@@ -21,5 +21,5 @@ go test ./...
 ```
 
 ## Reference
-[sql]
+[sqlx](https://github.com/jmoiron/sqlx)
 [gvm](https://github.com/moovweb/gvm)
