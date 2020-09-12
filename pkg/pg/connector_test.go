@@ -59,6 +59,7 @@ func runTests(
 	}
 }
 
+// TestConnectorConnection tests for the db connection from the connector's connection pool
 func TestConnectorConnection(t *testing.T) {
 	connectionTesting := func(ct *ConnectorTest) {
 		_, err := ct.connector.Open()
@@ -69,6 +70,8 @@ func TestConnectorConnection(t *testing.T) {
 	runTests(t, config, connectionTesting)
 }
 
+// TestConnectorRunDBQuery tests for basic db query,
+// including "select generate_series"
 func TestConnectorRunDBQuery(t *testing.T) {
 	connectionDBQueryTesting := func(ct *ConnectorTest) {
 		conn, err := ct.connector.Open()
@@ -83,13 +86,11 @@ func TestConnectorRunDBQuery(t *testing.T) {
 		counter := 0
 		for rows.Next() {
 			counter++
-
 			var cur int
 			err := rows.Scan(&cur)
 			if err != nil {
 				ct.Fatal(err)
 			}
-
 			assert.Equal(t, cur, counter)
 		}
 	}
