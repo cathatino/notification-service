@@ -11,11 +11,12 @@ const (
 )
 
 var (
-	// TODO check locking mechanism
-	dialectsLock sync.RWMutex
+	dialectsLock sync.RWMutex // TODO check locking mechanism
 	dials        map[string]*Connector
 )
 
+// Connector is exposed to make the db connection more easier
+// By abstracting the db & config property
 type Connector struct {
 	db     *sqlx.DB
 	config *Config
