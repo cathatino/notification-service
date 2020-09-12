@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -46,12 +48,12 @@ func runTests(
 	execTestings ...func(*ConnectorTest),
 ) {
 	// establish connection
-	connector, err := New(config)
+	conn, err := New(config)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// test for each execution testing
-	connectorTest := &ConnectorTest{t, connector}
+	connectorTest := &ConnectorTest{t, conn}
 	for _, execTesting := range execTestings {
 		execTesting(connectorTest)
 	}
@@ -64,9 +66,32 @@ func TestConnectorConnection(t *testing.T) {
 			ct.Fatal(err)
 		}
 	}
-	runTests(
-		t,
-		config,
-		connectionTesting,
-	)
+	runTests(t, config, connectionTesting)
+}
+
+func TestConnectorRunDBQuery(t *testing.T) {
+	connectionDBQueryTesting := func(ct *ConnectorTest) {
+		conn, err := ct.connector.Open()
+		if err != nil {
+			ct.Fatal(err)
+		}
+		rows, err := conn.db.Query("select generate_series(1, 10)")
+		if err != nil {
+			ct.Fatal(err)
+		}
+
+		counter := 0
+		for rows.Next() {
+			counter++
+
+			var cur int
+			err := rows.Scan(&cur)
+			if err != nil {
+				ct.Fatal(err)
+			}
+
+			assert.Equal(t, cur, counter)
+		}
+	}
+	runTests(t, config, connectionDBQueryTesting)
 }
