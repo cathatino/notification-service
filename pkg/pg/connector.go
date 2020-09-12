@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -24,7 +25,7 @@ type Connector struct {
 
 // Open New Connection
 // Initialize New Connector
-func (c *Connector) New(config *Config) (*Connector, error) {
+func New(config *Config) (*Connector, error) {
 	db, err := sqlx.Open(psqlDriverName, config.GetPsqlInfo())
 	if err != nil {
 		return nil, err
@@ -38,9 +39,9 @@ func (c *Connector) New(config *Config) (*Connector, error) {
 	}, err
 }
 
-// Get
+// Open
 // returns an existing or returns new Connector
-func (c *Connector) Get() (*Connector, error) {
+func (c *Connector) Open() (*Connector, error) {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
 	if dials == nil {
@@ -52,10 +53,12 @@ func (c *Connector) Get() (*Connector, error) {
 		return connector, nil
 	}
 
-	connector, err := c.New(c.config)
+	connector, err := New(c.config)
 	if err != nil {
 		return nil, err
 	}
 	dials[psqlInfo] = connector
 	return connector, nil
 }
+
+// TODO have a close func

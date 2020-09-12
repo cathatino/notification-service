@@ -19,5 +19,4 @@ func TestGetPsqlInfo(t *testing.T) {
 		"host=host port=5432 user=user password=password dbname=dbname sslmode=disable",
 		config.GetPsqlInfo(),
 	)
-
 }
