@@ -38,7 +38,7 @@ func (c *Connector) New(config *Config) (*Connector, error) {
 }
 
 // Get
-// returns an existing or new Connector
+// returns an existing or returns new Connector
 func (c *Connector) Get() (*Connector, error) {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
