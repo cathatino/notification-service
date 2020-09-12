@@ -7,9 +7,17 @@ A notification service
 ├── README.md
 ├── cmd
 ├── go.mod
+├── go.sum
+├── internal
+│   └── manager
+│       └── db
+│           └── driver.go
 └── pkg
-    └── sql
-        └── driver.go
+    └── pg
+        ├── config.go
+        ├── config_test.go
+        ├── connector.go
+        └── connector_test.go
 ```
 
 ## Testing
