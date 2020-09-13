@@ -39,9 +39,9 @@ func New(config *Config) (*Connector, error) {
 	}, err
 }
 
-// Open
+// GetDB
 // returns an existing or returns new Connector
-func (c *Connector) Open() (*Connector, error) {
+func (c *Connector) GetDB() (*Connector, error) {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
 	if dials == nil {

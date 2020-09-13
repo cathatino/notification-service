@@ -62,7 +62,7 @@ func runTests(
 // TestConnectorConnection tests for the db connection from the connector's connection pool
 func TestConnectorConnection(t *testing.T) {
 	connectionTesting := func(ct *ConnectorTest) {
-		_, err := ct.connector.Open()
+		_, err := ct.connector.GetDB()
 		if err != nil {
 			ct.Fatal(err)
 		}
@@ -74,7 +74,7 @@ func TestConnectorConnection(t *testing.T) {
 // including "select generate_series"
 func TestConnectorRunDBQuery(t *testing.T) {
 	connectionDBQueryTesting := func(ct *ConnectorTest) {
-		conn, err := ct.connector.Open()
+		conn, err := ct.connector.GetDB()
 		if err != nil {
 			ct.Fatal(err)
 		}
