@@ -13,7 +13,7 @@ const (
 
 var (
 	dialectsLock sync.RWMutex // TODO check locking mechanism
-	dials        map[string]*Connector
+	dials        map[string]*sqlx.DB
 )
 
 // Connector is exposed to make the db connection more easier
@@ -41,24 +41,24 @@ func New(config *Config) (*Connector, error) {
 
 // GetDB
 // returns an existing or returns new Connector
-func (c *Connector) GetDB() (*Connector, error) {
+func (c *Connector) GetDB() (*sqlx.DB, error) {
 	dialectsLock.Lock()
 	defer dialectsLock.Unlock()
 	if dials == nil {
-		dials = make(map[string]*Connector)
+		dials = make(map[string]*sqlx.DB)
 	}
 	psqlInfo := c.config.GetPsqlInfo()
-	connector, ok := dials[psqlInfo]
+	db, ok := dials[psqlInfo]
 	if ok {
-		return connector, nil
+		return db, nil
 	}
 
 	connector, err := New(c.config)
 	if err != nil {
 		return nil, err
 	}
-	dials[psqlInfo] = connector
-	return connector, nil
+	dials[psqlInfo] = connector.db
+	return connector.db, nil
 }
 
 // TODO have a close func

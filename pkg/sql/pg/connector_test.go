@@ -74,11 +74,11 @@ func TestConnectorConnection(t *testing.T) {
 // including "select generate_series"
 func TestConnectorRunDBQuery(t *testing.T) {
 	connectionDBQueryTesting := func(ct *ConnectorTest) {
-		conn, err := ct.connector.GetDB()
+		db, err := ct.connector.GetDB()
 		if err != nil {
 			ct.Fatal(err)
 		}
-		rows, err := conn.db.Query("select generate_series(1, 10)")
+		rows, err := db.Query("select generate_series(1, 10)")
 		if err != nil {
 			ct.Fatal(err)
 		}
