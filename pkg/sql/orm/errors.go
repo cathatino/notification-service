@@ -3,5 +3,6 @@ package orm
 import "errors"
 
 var (
-	ModelObjIsNotPtr = errors.New("model object is not pointer")
+	ErrModelObjIsNotPtr                = errors.New("model object is not pointer")
+	ErrInvalidLengthBetweenColsAndVals = errors.New("model object's columns length is inconsistent with values length")
 )

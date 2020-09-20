@@ -5,4 +5,5 @@ type Model interface {
 	GetColumns() []string
 	GetValues() []interface{}
 	SetPrimaryKey(int64)
+	GetPrimaryKey(int64)
 }

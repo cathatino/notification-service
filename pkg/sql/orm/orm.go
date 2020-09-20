@@ -16,20 +16,20 @@ import (
 
 type ORM interface {
 	Create(ctx context.Context, model Model) error
-	// Update(ctx context.Context, model Model) error
+	Update(ctx context.Context, model Model) error
 	Find(ctx context.Context, models interface{}, pred interface{}, args ...interface{}) error
 	FindOne(ctx context.Context, model Model, pred interface{}, args ...interface{}) error
 }
 
 type orm struct {
-	connector sql.Connector
+	sql.Connector
 }
 
 // Create db record using the model object
 // only the PrimaryKey will be updated for the other fields remain as it is
 func (o *orm) Create(ctx context.Context, model Model) (err error) {
 	if !reflectutil.IsPtr(model) {
-		err = ModelObjIsNotPtr
+		err = ErrModelObjIsNotPtr
 		return
 	}
 
@@ -41,7 +41,7 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 		return
 	}
 
-	db, err := o.connector.GetDB()
+	db, err := o.GetDB()
 	if err != nil {
 		return
 	}
@@ -57,5 +57,27 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 	}
 	model.SetPrimaryKey(id)
 
+	return err
+}
+
+// Update db record using the model object
+// note: the syntax will be
+//     Update xxx_tab set col_a = val_a, ..., where id = model.GetPrimaryKey();
+func (o *orm) Update(ctx context.Context, model Model) error {
+	if !reflectutil.IsPtr(model) {
+		return ErrModelObjIsNotPtr
+	}
+
+	cols, vals := model.GetColumns(), model.GetValues()
+	if len(cols) != len(vals) {
+		return ErrInvalidLengthBetweenColsAndVals
+	}
+
+	setMapContent := squirrel.Eq{}
+	for idx := 0; idx < len(cols); idx++ {
+		setMapContent[cols[idx]] = vals[idx]
+	}
+
+	_, err := squirrel.Update(model.GetTableName()).SetMap(setMapContent).ExecContext(ctx)
 	return err
 }
