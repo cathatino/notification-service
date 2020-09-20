@@ -116,9 +116,15 @@ func (o *orm) Find(ctx context.Context, modelsPtr interface{}, pred interface{},
 
 	models := reflect.ValueOf(modelsPtr).Elem()
 	elemType := models.Type().Elem()
+
+	if reflect.TypeOf(reflect.New(elemType)).Kind() == reflect.Ptr {
+		return ErrModelObjIsPtr
+	}
+
+	columns := reflect.New(elemType).Interface().(Model).GetColumns()
 	tableName := reflect.New(elemType).Interface().(Model).GetTableName()
 
-	sqlCmd, sqlArgs, err := squirrel.Select("*").From(tableName).Where(pred, args).PlaceholderFormat(squirrel.Dollar).ToSql()
+	sqlCmd, sqlArgs, err := squirrel.Select(columns...).From(tableName).Where(pred, args).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
 		return err
 	}
@@ -127,17 +133,16 @@ func (o *orm) Find(ctx context.Context, modelsPtr interface{}, pred interface{},
 	if err != nil {
 		return err
 	}
-	rows, err := db.QueryContext(ctx, sqlCmd, sqlArgs...)
+	rows, err := db.QueryxContext(ctx, sqlCmd, sqlArgs...)
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
 		model := reflect.New(elemType)
-		err := rows.Scan(&model)
-		if err != nil {
+		if err := rows.StructScan(model.Interface()); err != nil {
 			return err
 		}
-		models.Set(reflect.Append(models, model))
+		models.Set(reflect.Append(models, model.Elem()))
 	}
 	return nil
 }

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-
 	"github.com/cathatino/notification-service/pkg/sql/pg"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -18,18 +18,18 @@ const (
 var (
 	config *pg.Config
 	// mocking var
-	mockUserTabColNameId       = "id"
+	mockUserTabColNameUserId   = "user_id"
 	mockUserTabColNameUserName = "user_name"
 	mockUserTabColNameCtime    = "ctime"
 	mockUserTabColumns         = []string{
-		mockUserTabColNameId,
+		mockUserTabColNameUserId,
 		mockUserTabColNameUserName,
 		mockUserTabColNameCtime,
 	}
 )
 
 type MockUserModel struct {
-	Id       int64  `db:"id"`
+	UserId   int64  `db:"user_id"`
 	UserName string `db:"user_name"`
 	Ctime    uint32 `db:"ctime"`
 }
@@ -44,18 +44,18 @@ func (m *MockUserModel) GetColumns() []string {
 
 func (m *MockUserModel) GetValues() []interface{} {
 	return []interface{}{
-		m.Id,
+		m.UserId,
 		m.UserName,
 		m.Ctime,
 	}
 }
 
 func (m *MockUserModel) SetPrimaryKey(primaryKey int64) {
-	m.Id = primaryKey
+	m.UserId = primaryKey
 }
 
 func (m *MockUserModel) GetPrimaryKey() (string, int64) {
-	return mockUserTabColNameId, m.Id
+	return mockUserTabColNameUserId, m.UserId
 }
 
 func init() {
@@ -94,8 +94,9 @@ func TestOrmFind(t *testing.T) {
 	ctx := context.Background()
 	users := make([]MockUserModel, 0)
 
-	err := orm.Find(ctx, &users, squirrel.Eq{"id": 1})
+	err := orm.Find(ctx, &users, squirrel.Eq{"user_id": "1"})
 	if err != nil {
 		t.Fatal(err)
 	}
+	require.True(t, len(users) == 1)
 }
