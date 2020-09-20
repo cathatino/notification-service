@@ -1,4 +1,4 @@
-package sql
+package connector
 
 import "github.com/jmoiron/sqlx"
 

@@ -11,7 +11,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 
-	"github.com/cathatino/notification-service/pkg/sql"
+	"github.com/cathatino/notification-service/pkg/sql/connector"
 	"github.com/cathatino/notification-service/pkg/utils/reflectutil"
 )
 
@@ -22,8 +22,10 @@ type ORM interface {
 }
 
 type orm struct {
-	sql.Connector
+	connector connector.Connector
 }
+
+func NewOrm()
 
 // Create db record using the model object
 // only the PrimaryKey will be updated for the other fields remain as it is
@@ -41,7 +43,7 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 		return
 	}
 
-	db, err := o.GetDB()
+	db, err := o.connector.GetDB()
 	if err != nil {
 		return
 	}
@@ -78,7 +80,26 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 		setMapContent[cols[idx]] = vals[idx]
 	}
 
-	_, err := squirrel.Update(model.GetTableName()).SetMap(setMapContent).ExecContext(ctx)
+	primaryKeyCol, primaryKeyVal := model.GetPrimaryKey()
+	sqlCmd, args, err := squirrel.Update(model.GetTableName()).
+		SetMap(setMapContent).
+		Where(squirrel.Eq{
+			primaryKeyCol: primaryKeyVal,
+		}).ToSql()
+	if err != nil {
+		return err
+	}
+
+	db, err := o.connector.GetDB()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(sqlCmd, args)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -96,7 +117,7 @@ func (o *orm) Find(ctx context.Context, models *[]Model, pred interface{}, args 
 		return err
 	}
 
-	db, err := o.GetDB()
+	db, err := o.connector.GetDB()
 	if err != nil {
 		return err
 	}
