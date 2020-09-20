@@ -80,7 +80,7 @@ func init() {
 	}
 }
 
-func runNewOrm(t *testing.T) ORM {
+func fetchNewOrm(t *testing.T) ORM {
 	conn, err := pg.New(config)
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +89,7 @@ func runNewOrm(t *testing.T) ORM {
 }
 
 func TestOrmFind(t *testing.T) {
-	orm := runNewOrm(t)
+	orm := fetchNewOrm(t)
 
 	ctx := context.Background()
 	users := make([]MockUserModel, 0)
