@@ -7,6 +7,7 @@ package orm
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/Masterminds/squirrel"
 
@@ -17,8 +18,7 @@ import (
 type ORM interface {
 	Create(ctx context.Context, model Model) error
 	Update(ctx context.Context, model Model) error
-	Find(ctx context.Context, models interface{}, pred interface{}, args ...interface{}) error
-	FindOne(ctx context.Context, model Model, pred interface{}, args ...interface{}) error
+	Find(ctx context.Context, models *[]Model, pred interface{}, args ...interface{}) error
 }
 
 type orm struct {
@@ -80,4 +80,38 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 
 	_, err := squirrel.Update(model.GetTableName()).SetMap(setMapContent).ExecContext(ctx)
 	return err
+}
+
+// Find db record using model object
+func (o *orm) Find(ctx context.Context, models *[]Model, pred interface{}, args ...interface{}) error {
+	if len(*models) != 0 {
+		return ErrNonZeroSliceLength
+	}
+
+	modelElem := reflect.ValueOf(models).Elem().Type().Elem()
+	tableName := reflect.New(modelElem).Interface().(Model)
+
+	sqlCmd, args, err := squirrel.Select("*").From(tableName.GetTableName()).Where(pred, args).ToSql()
+	if err != nil {
+		return err
+	}
+
+	db, err := o.GetDB()
+	if err != nil {
+		return err
+	}
+
+	rows, err := db.QueryxContext(ctx, sqlCmd, args)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		model := reflect.New(modelElem).Interface().(Model)
+		err := rows.StructScan(model)
+		if err != nil {
+			return err
+		}
+		*models = append(*models, model)
+	}
+	return nil
 }
