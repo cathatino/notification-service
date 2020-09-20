@@ -22,10 +22,12 @@ type ORM interface {
 }
 
 type orm struct {
-	connector connector.Connector
+	connector.Connector
 }
 
-func NewOrm()
+func NewOrm(con connector.Connector) ORM {
+	return &orm{con}
+}
 
 // Create db record using the model object
 // only the PrimaryKey will be updated for the other fields remain as it is
@@ -43,7 +45,7 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 		return
 	}
 
-	db, err := o.connector.GetDB()
+	db, err := o.GetDB()
 	if err != nil {
 		return
 	}
@@ -90,7 +92,7 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 		return err
 	}
 
-	db, err := o.connector.GetDB()
+	db, err := o.GetDB()
 	if err != nil {
 		return err
 	}
@@ -117,7 +119,7 @@ func (o *orm) Find(ctx context.Context, models *[]Model, pred interface{}, args 
 		return err
 	}
 
-	db, err := o.connector.GetDB()
+	db, err := o.GetDB()
 	if err != nil {
 		return err
 	}
