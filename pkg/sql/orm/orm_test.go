@@ -22,7 +22,6 @@ var (
 	mockUserTabColNameUserName = "user_name"
 	mockUserTabColNameCtime    = "ctime"
 	mockUserTabColumns         = []string{
-		mockUserTabColNameUserId,
 		mockUserTabColNameUserName,
 		mockUserTabColNameCtime,
 	}
@@ -38,16 +37,22 @@ func (m *MockUserModel) GetTableName() string {
 	return mockUserTableName
 }
 
-func (m *MockUserModel) GetColumns() []string {
+func (m *MockUserModel) GetColumns(withPrimaryKey bool) []string {
+	if withPrimaryKey {
+		return append([]string{mockUserTabColNameUserId}, mockUserTabColumns...)
+	}
 	return mockUserTabColumns
 }
 
-func (m *MockUserModel) GetValues() []interface{} {
-	return []interface{}{
-		m.UserId,
+func (m *MockUserModel) GetValues(withPrimaryKey bool) []interface{} {
+	values := []interface{}{
 		m.UserName,
 		m.Ctime,
 	}
+	if withPrimaryKey {
+		return append([]interface{}{m.UserId}, values...)
+	}
+	return values
 }
 
 func (m *MockUserModel) SetPrimaryKey(primaryKey int64) {

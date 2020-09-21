@@ -37,9 +37,10 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 		return
 	}
 
+	withPrimaryKey := false
 	sqlCmd, args, err := squirrel.Insert(model.GetTableName()).
-		Columns(model.GetColumns()...).
-		Values(model.GetValues()...).
+		Columns(model.GetColumns(withPrimaryKey)...).
+		Values(model.GetValues(withPrimaryKey)...).
 		ToSql()
 	if err != nil {
 		return
@@ -72,7 +73,8 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 		return ErrModelObjIsNotPtr
 	}
 
-	cols, vals := model.GetColumns(), model.GetValues()
+	withPrimaryKey := false
+	cols, vals := model.GetColumns(withPrimaryKey), model.GetValues(withPrimaryKey)
 	if len(cols) != len(vals) {
 		return ErrInvalidLengthBetweenColsAndVals
 	}
@@ -121,7 +123,8 @@ func (o *orm) Find(ctx context.Context, modelsPtr interface{}, pred interface{},
 		return ErrModelObjIsPtr
 	}
 
-	columns := reflect.New(elemType).Interface().(Model).GetColumns()
+	withPrimaryKey := true
+	columns := reflect.New(elemType).Interface().(Model).GetColumns(withPrimaryKey)
 	tableName := reflect.New(elemType).Interface().(Model).GetTableName()
 
 	sqlCmd, sqlArgs, err := squirrel.Select(columns...).From(tableName).Where(pred, args).PlaceholderFormat(squirrel.Dollar).ToSql()
