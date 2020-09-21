@@ -104,6 +104,7 @@ func TestOrmFind(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	require.True(t, len(users) == 1)
 }
 
@@ -122,4 +123,19 @@ func TestOrmCreate(t *testing.T) {
 	}
 
 	require.True(t, user.UserId > 0)
+}
+
+func TestOrmUpdate(t *testing.T) {
+	orm := fetchNewOrm(t)
+
+	ctx := context.Background()
+	user := MockUserModel{
+		UserId:   1,
+		UserName: "mocked_user1",
+		Ctime:    uint32(time.Now().Unix()),
+	}
+
+	if err := orm.Update(ctx, &user); err != nil {
+		t.Fatal(err)
+	}
 }

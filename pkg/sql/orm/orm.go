@@ -86,11 +86,12 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 	}
 
 	primaryKeyCol, primaryKeyVal := model.GetPrimaryKey()
-	sqlCmd, args, err := squirrel.Update(model.GetTableName()).
+	sqlCmd, sqlArgs, err := squirrel.Update(model.GetTableName()).
 		SetMap(setMapContent).
 		Where(squirrel.Eq{
 			primaryKeyCol: primaryKeyVal,
-		}).ToSql()
+		}).PlaceholderFormat(squirrel.Dollar).
+		ToSql()
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (o *orm) Update(ctx context.Context, model Model) error {
 		return err
 	}
 
-	_, err = db.Exec(sqlCmd, args)
+	_, err = db.Exec(sqlCmd, sqlArgs...)
 	if err != nil {
 		return err
 	}
