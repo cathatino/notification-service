@@ -2,6 +2,7 @@ package orm
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -104,4 +105,21 @@ func TestOrmFind(t *testing.T) {
 		t.Fatal(err)
 	}
 	require.True(t, len(users) == 1)
+}
+
+func TestOrmCreate(t *testing.T) {
+	orm := fetchNewOrm(t)
+
+	ctx := context.Background()
+	user := MockUserModel{
+		UserName: fmt.Sprintf("user_name_%d", time.Now().Unix()),
+		Ctime:    uint32(time.Now().Unix()),
+	}
+
+	err := orm.Create(ctx, &user)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	require.True(t, user.UserId > 0)
 }

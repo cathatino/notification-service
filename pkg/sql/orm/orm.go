@@ -7,6 +7,7 @@ package orm
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/Masterminds/squirrel"
@@ -38,10 +39,14 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 	}
 
 	withPrimaryKey := false
-	sqlCmd, args, err := squirrel.Insert(model.GetTableName()).
+	primaryKeyName, primaryKeyValue := model.GetPrimaryKey()
+	sqlCmd, sqlArgs, err := squirrel.Insert(model.GetTableName()).
 		Columns(model.GetColumns(withPrimaryKey)...).
 		Values(model.GetValues(withPrimaryKey)...).
+		Suffix(fmt.Sprintf("RETURNING %s", primaryKeyName)).
+		PlaceholderFormat(squirrel.Dollar).
 		ToSql()
+
 	if err != nil {
 		return
 	}
@@ -51,16 +56,12 @@ func (o *orm) Create(ctx context.Context, model Model) (err error) {
 		return
 	}
 
-	result, err := db.Exec(sqlCmd, args)
+	err = db.QueryRowxContext(ctx, sqlCmd, sqlArgs...).Scan(&primaryKeyValue)
 	if err != nil {
-		return
+		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return
-	}
-	model.SetPrimaryKey(id)
+	model.SetPrimaryKey(primaryKeyValue)
 
 	return err
 }
