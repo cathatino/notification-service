@@ -30,4 +30,9 @@ jobs:
       run: go build -v .
 
     - name: Test
+      env:
+        PSQL_TEST_HOST: ${{ secrets.PSQL_TEST_HOST }}
+        PSQL_TEST_USER: ${{ secrets.PSQL_TEST_USER }}
+        PSQL_TEST_PASSWORD: ${{ secrets.PSQL_TEST_PASSWORD }}
+        PSQL_TEST_DBNAME: ${{ secrets.PSQL_TEST_DBNAME }}
       run: go test -v ./...
