@@ -1,7 +1,7 @@
 package models
 
 const (
-	clientTableName                = "client_user_tab"
+	clientTableName                = "client_tab"
 	clientTabColNameClientId       = "client_id"
 	clientTabColNameClientCategory = "client_category"
 	clientTabColNameClientKey      = "client_key"
