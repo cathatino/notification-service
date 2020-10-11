@@ -1,4 +1,4 @@
-package client_manager
+package models
 
 import (
 	"testing"

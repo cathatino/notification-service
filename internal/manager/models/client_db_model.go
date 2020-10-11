@@ -1,4 +1,4 @@
-package client_manager
+package models
 
 const (
 	clientTableName                = "client_user_tab"
