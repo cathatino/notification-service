@@ -35,4 +35,6 @@ jobs:
         PSQL_TEST_USER: ${{ secrets.PSQL_TEST_USER }}
         PSQL_TEST_PASSWORD: ${{ secrets.PSQL_TEST_PASSWORD }}
         PSQL_TEST_DBNAME: ${{ secrets.PSQL_TEST_DBNAME }}
+        REDIS_TEST_HOST: ${{ secrets.REDIS_TEST_HOST }}
+        REDIS_TEST_PASSWORD: ${{ secrets.REDIS_TEST_PASSWORD }}
       run: go test -v ./...
