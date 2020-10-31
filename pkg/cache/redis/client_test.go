@@ -33,12 +33,12 @@ func TestGetNewRedisClient(t *testing.T) {
 }
 
 func TestRedisClientPing(t *testing.T) {
-	pool, err := GetNewRedisClient(config)
+	connector, err := GetNewRedisClient(config)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Ping(pool); err != nil {
+	if err = connector.Ping(); err != nil {
 		t.Fatal(err)
 	}
 }

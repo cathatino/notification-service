@@ -13,7 +13,9 @@ const (
 	ServerTcp   string = "tcp"
 )
 
-var pool *rd.Pool
+type Connector struct {
+	pool rd.Pool
+}
 
 type Config struct {
 	// Maximum number of idle connections in the pool.
@@ -35,34 +37,33 @@ type Config struct {
 	Password string
 }
 
-func GetNewRedisClient(config *Config) (*rd.Pool, error) {
-	if pool != nil {
-		return pool, nil
-	}
-	return &rd.Pool{
-		MaxIdle:     config.MaxIdle,
-		IdleTimeout: config.IdleTimeout,
+func GetNewRedisClient(config *Config) (*Connector, error) {
+	return &Connector{
+		pool: rd.Pool{
+			MaxIdle:     config.MaxIdle,
+			IdleTimeout: config.IdleTimeout,
 
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial(ServerTcp,
-				config.Host,
-				rd.DialPassword(config.Password),
-			)
-			if err != nil {
-				return nil, err
-			}
-			return c, err
-		},
+			Dial: func() (redis.Conn, error) {
+				c, err := redis.Dial(ServerTcp,
+					config.Host,
+					rd.DialPassword(config.Password),
+				)
+				if err != nil {
+					return nil, err
+				}
+				return c, err
+			},
 
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			_, err := c.Do(CommandPing)
-			return err
+			TestOnBorrow: func(c redis.Conn, t time.Time) error {
+				_, err := c.Do(CommandPing)
+				return err
+			},
 		},
 	}, nil
 }
 
-func Ping(pool *rd.Pool) error {
-	conn := pool.Get()
+func Ping(c *Connector) error {
+	conn := c.pool.Get()
 	defer conn.Close()
 	_, err := conn.Do("PING")
 	if err != nil {

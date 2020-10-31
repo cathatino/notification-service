@@ -6,18 +6,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cathatino/notification-service/pkg/cache/redis"
 	"github.com/cathatino/notification-service/pkg/sql/pg"
 	"github.com/stretchr/testify/require"
 )
 
 var config *pg.Config
+var redisConfig *redis.Config
 
 func fetchNewClientManager(t *testing.T) ClientManager {
 	conn, err := pg.New(config)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return NewClientManager(conn)
+	pool, err := redis.GetNewRedisClient(redisConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return NewClientManager(conn, pool)
 }
 
 func TestFindClientById(t *testing.T) {
