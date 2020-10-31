@@ -11,19 +11,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var config *pg.Config
+var dbConfig *pg.Config
 var redisConfig *redis.Config
 
 func fetchNewClientManager(t *testing.T) ClientManager {
-	conn, err := pg.New(config)
+	dbConnector, err := pg.New(dbConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
-	pool, err := redis.GetNewRedisClient(redisConfig)
+	redisConnector, err := redis.GetNewRedisClient(redisConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return NewClientManager(conn, pool)
+	return NewClientManager(dbConnector, redisConnector)
 }
 
 func TestFindClientById(t *testing.T) {
@@ -47,7 +47,7 @@ func init() {
 	}
 
 	// init config
-	config = &pg.Config{
+	dbConfig = &pg.Config{
 		Host:            env("PSQL_TEST_HOST", "host"),
 		Port:            env("PSQL_TEST_PORT", "5432"),
 		User:            env("PSQL_TEST_USER", "user"),
@@ -56,5 +56,12 @@ func init() {
 		MaxOpenConns:    10,
 		MaxIdleConns:    10,
 		ConnMaxLifetime: time.Hour,
+	}
+	redisConfig = &redis.Config{
+		Host:        env("REDIS_TEST_HOST", "host"),
+		Password:    env("REDIS_TEST_PASSWORD", "password"),
+		IdleTimeout: 300 * time.Second,
+		MaxActive:   100,
+		MaxIdle:     10,
 	}
 }

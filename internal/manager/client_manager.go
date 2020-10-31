@@ -16,17 +16,17 @@ type ClientManager interface {
 }
 
 type clientManager struct {
-	ORM       orm.ORM
-	RedisPool *redis.Pool // TODO: implement cache layer orm
+	ORM            orm.ORM
+	RedisConnector *redis.Connector
 }
 
 func NewClientManager(
 	con connector.Connector,
-	redisPool *redis.Pool,
+	connector *redis.Connector,
 ) ClientManager {
 	return &clientManager{
-		ORM:       orm.NewOrm(con),
-		RedisPool: redisPool,
+		ORM:            orm.NewOrm(con),
+		RedisConnector: connector,
 	}
 }
 
@@ -35,7 +35,6 @@ func (cm *clientManager) GetClientByClientId(ctx context.Context, clientId int64
 	error,
 ) {
 	clients := make([]models.ClientModel, 0)
-	cm.RedisPool.
 	if err := cm.ORM.Find(ctx, &clients, squirrel.Eq{"client_id": clientId}); err != nil {
 		return nil, err
 	}
