@@ -14,7 +14,17 @@ const (
 )
 
 type Connector struct {
-	pool rd.Pool
+	pool *rd.Pool
+}
+
+func (c *Connector) Ping() error {
+	conn := c.pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("PING")
+	if err != nil {
+		return fmt.Errorf("can't 'PING' redis: %v", err)
+	}
+	return nil
 }
 
 type Config struct {
@@ -39,7 +49,7 @@ type Config struct {
 
 func GetNewRedisClient(config *Config) (*Connector, error) {
 	return &Connector{
-		pool: rd.Pool{
+		pool: &rd.Pool{
 			MaxIdle:     config.MaxIdle,
 			IdleTimeout: config.IdleTimeout,
 
@@ -60,14 +70,4 @@ func GetNewRedisClient(config *Config) (*Connector, error) {
 			},
 		},
 	}, nil
-}
-
-func Ping(c *Connector) error {
-	conn := c.pool.Get()
-	defer conn.Close()
-	_, err := conn.Do("PING")
-	if err != nil {
-		return fmt.Errorf("can't 'PING' redis: %v", err)
-	}
-	return nil
 }
