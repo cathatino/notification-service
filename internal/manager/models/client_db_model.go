@@ -1,5 +1,10 @@
 package models
 
+import (
+	"bytes"
+	"fmt"
+)
+
 const (
 	clientTableName                = "client_tab"
 	clientTabColNameClientId       = "client_id"
@@ -60,4 +65,31 @@ func (c *ClientModel) SetPrimaryKey(primaryKey int64) {
 
 func (m *ClientModel) GetPrimaryKey() (string, int64) {
 	return clientTabColNameClientId, m.ClientId
+}
+
+func (m *ClientModel) MarshalBinary() ([]byte, error) {
+	var buffer bytes.Buffer
+	fmt.Fprintln(
+		&buffer,
+		m.ClientId,
+		m.ClientCategory,
+		m.ClientKey,
+		m.Description,
+		m.Ctime,
+		m.Mtime,
+	)
+	return buffer.Bytes(), nil
+}
+
+func (m *ClientModel) UnmarshalBinary(data []byte) error {
+	buffer := bytes.NewBuffer(data)
+	_, err := fmt.Fscanln(buffer,
+		&m.ClientId,
+		&m.ClientCategory,
+		&m.ClientKey,
+		&m.Description,
+		&m.Ctime,
+		&m.Mtime,
+	)
+	return err
 }
