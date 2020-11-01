@@ -27,6 +27,19 @@ func (c *Connector) Ping() error {
 	return nil
 }
 
+func (c *Connector) Get(key string) ([]byte, error) {
+	conn := c.pool.Get()
+	defer conn.Close()
+	return redis.Bytes(conn.Do("GET", key))
+}
+
+func (c *Connector) Set(key string, value []byte) error {
+	conn := c.pool.Get()
+	defer conn.Close()
+    _, err := conn.Do("SET", key, value)
+    return err
+}
+
 type Config struct {
 	// Maximum number of idle connections in the pool.
 	MaxIdle int
