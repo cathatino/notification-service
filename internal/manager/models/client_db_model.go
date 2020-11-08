@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"encoding/gob"
 )
 
 const (
@@ -68,6 +69,7 @@ func (m *ClientModel) GetPrimaryKey() (string, int64) {
 }
 
 func (m *ClientModel) MarshalBinary() ([]byte, error) {
+	gob.Register(&ClientModel{})
 	var buffer bytes.Buffer
 	fmt.Fprintln(
 		&buffer,
@@ -82,6 +84,7 @@ func (m *ClientModel) MarshalBinary() ([]byte, error) {
 }
 
 func (m *ClientModel) UnmarshalBinary(data []byte) error {
+	gob.Register(&ClientModel{})
 	buffer := bytes.NewBuffer(data)
 	_, err := fmt.Fscanln(buffer,
 		&m.ClientId,
