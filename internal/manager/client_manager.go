@@ -1,10 +1,10 @@
 package manager
 
 import (
-	"fmt"
 	"bytes"
 	"context"
 	"encoding/gob"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 
@@ -39,7 +39,7 @@ func (cm *clientManager) GetClientByClientId(ctx context.Context, clientId int64
 ) {
 	// Read from cache
 	cacheKey := fmt.Sprintf(GetUserClientByIdCacheFmt, clientId)
-	if bytesSlice, _ := cm.RedisConnector.Get(cacheKey); len(bytesSlice) > 0 {
+	if bytesSlice, err := cm.RedisConnector.Get(cacheKey); err == nil && len(bytesSlice) > 0 {
 		buffer := bytes.NewBuffer(bytesSlice)
 		decoder := gob.NewDecoder(buffer)
 		var clientModelObj models.ClientModel
@@ -60,9 +60,9 @@ func (cm *clientManager) GetClientByClientId(ctx context.Context, clientId int64
 	clientModelObj := &clients[0]
 
 	// Set to Cache
-	buffer := new(bytes.Buffer)
-	encoder := gob.NewEncoder(buffer)
-    encoder.Encode(clientModelObj)
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	encoder.Encode(clientModelObj)
 	bytesSlice := buffer.Bytes()
 	cm.RedisConnector.Set(cacheKey, bytesSlice)
 

@@ -2,7 +2,6 @@ package models
 
 import (
 	"bytes"
-	"fmt"
 	"encoding/gob"
 )
 
@@ -64,35 +63,44 @@ func (c *ClientModel) SetPrimaryKey(primaryKey int64) {
 	c.ClientId = primaryKey
 }
 
-func (m *ClientModel) GetPrimaryKey() (string, int64) {
-	return clientTabColNameClientId, m.ClientId
+func (c *ClientModel) GetPrimaryKey() (string, int64) {
+	return clientTabColNameClientId, c.ClientId
 }
 
-func (m *ClientModel) MarshalBinary() ([]byte, error) {
-	gob.Register(&ClientModel{})
-	var buffer bytes.Buffer
-	fmt.Fprintln(
-		&buffer,
-		m.ClientId,
-		m.ClientCategory,
-		m.ClientKey,
-		m.Description,
-		m.Ctime,
-		m.Mtime,
-	)
-	return buffer.Bytes(), nil
+func (c *ClientModel) GobEncode() ([]byte, error) {
+	w := new(bytes.Buffer)
+	encoder := gob.NewEncoder(w)
+	fields := []interface{}{
+		c.ClientId,
+		c.ClientCategory,
+		c.ClientKey,
+		c.Description,
+		c.Ctime,
+		c.Mtime,
+	}
+	for _, field := range fields {
+		if err := encoder.Encode(field); err != nil {
+			return nil, err
+		}
+	}
+	return w.Bytes(), nil
 }
 
-func (m *ClientModel) UnmarshalBinary(data []byte) error {
-	gob.Register(&ClientModel{})
-	buffer := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(buffer,
-		&m.ClientId,
-		&m.ClientCategory,
-		&m.ClientKey,
-		&m.Description,
-		&m.Ctime,
-		&m.Mtime,
-	)
-	return err
+func (c *ClientModel) GobDecode(data []byte) error {
+	r := bytes.NewBuffer(data)
+	decoder := gob.NewDecoder(r)
+	fields := []interface{}{
+		&c.ClientId,
+		&c.ClientCategory,
+		&c.ClientKey,
+		&c.Description,
+		&c.Ctime,
+		&c.Mtime,
+	}
+	for _, field := range fields {
+		if err := decoder.Decode(field); err != nil {
+			return err
+		}
+	}
+	return nil
 }
